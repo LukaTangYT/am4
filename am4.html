@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AM4 Resource Prices</title>
+<style>
+ :root{
+  --blue:#4b9cff;
+  --green:#00c978;
+  --red:#ef3155;
+}
+:root, :root[data-theme="dark"]{
+  --bg:#111;
+  --panel:#181818;
+  --line:#303030;
+  --text:#f4f4f4;
+  --muted:#aaa;
+}
+:root[data-theme="light"]{
+  --bg:#f4f6f8;
+  --panel:#ffffff;
+  --line:#d9dee5;
+  --text:#16181b;
+  --muted:#68717c;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]):not([data-theme="light"]){
+    --bg:#f4f6f8;
+    --panel:#ffffff;
+    --line:#d9dee5;
+    --text:#16181b;
+    --muted:#68717c;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:"Trebuchet MS","Segoe UI",Arial,sans-serif}
+body{letter-spacing:.2px}
+.app{min-height:100vh;padding-bottom:86px}
+.top{
+  height:76px;background:var(--panel);border-bottom:1px solid #292929;
+  display:flex;align-items:center;padding:0 28px;box-shadow:0 2px 12px #0007
+}
+.logo{font-size:27px;font-style:italic;font-weight:700;letter-spacing:1px}
+.logo span{color:var(--blue)}
+.content{max-width:1180px;margin:auto;padding:34px 26px}
+.hero{display:flex;justify-content:space-between;align-items:flex-end;gap:30px;margin-bottom:25px}
+h1{font-size:38px;margin:0 0 6px;font-style:italic}
+.subtitle{color:var(--muted);font-size:14px}
+.top-tools{display:flex;align-items:center;gap:12px}
+.current-time{font-size:20px;font-variant-numeric:tabular-nums;font-weight:700}
+.theme-toggle{width:40px;height:40px;padding:0;border-radius:50%;font-size:20px;display:grid;place-items:center;background:var(--panel);color:var(--text);border:1px solid var(--line)}
+.clock{text-align:right}
+.clock .zone{font-size:19px;font-style:italic}
+.clock .zone b{color:var(--blue)}
+.clock .utc{color:#ddd;margin-top:5px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.stat small{color:var(--muted);display:block;font-size:12px;text-transform:uppercase;letter-spacing:1px}
+.stat strong{display:block;font-size:24px;margin-top:6px}
+.green{color:var(--green)!important}.red{color:var(--red)!important}.blue{color:var(--blue)!important}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.panelhead{padding:17px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:15px}
+.paneltitle{font-size:20px;font-style:italic;font-weight:700}
+.legend{display:flex;gap:15px;color:var(--muted);font-size:12px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.dot.green{background:var(--green)}.dot.red{background:var(--red)}
+table{width:100%;border-collapse:collapse}
+th{color:#999;font-size:12px;text-transform:uppercase;letter-spacing:1px;font-weight:600}
+th,td{padding:14px 22px;border-bottom:1px solid #292929}
+tbody tr:last-child td{border-bottom:0}
+tbody tr{transition:.15s}
+tbody tr:hover{background:#202020}
+td:first-child{font-style:italic;font-size:17px}
+.price{font-size:18px;font-weight:700}
+.low{color:var(--green)}
+.high{color:var(--red)}
+.ok{color:#e7e7e7}
+.signal{font-size:11px;font-weight:800;letter-spacing:.7px}
+.signal.both{color:var(--green)}
+.signal.fuel{color:#7fe9ba}
+.signal.co2{color:#75d5ff}
+.signal.none{color:#666}
+.now td{background:#20252b}
+.now td:first-child{border-left:3px solid var(--blue)}
+.badge{
+ display:inline-block;padding:4px 8px;border:1px solid #2e765a;
+ border-radius:999px;color:var(--green);font-size:10px
+}
+.controls{display:flex;gap:10px;align-items:center}
+button{
+ background:#262626;color:#fff;border:1px solid #444;border-radius:8px;
+ padding:9px 13px;cursor:pointer;font-weight:700
+}
+button:hover{border-color:var(--blue);color:#fff}
+.footer{
+ position:fixed;bottom:0;left:0;right:0;height:64px;background:var(--panel);
+ border-top:1px solid #303030;display:flex;justify-content:center;align-items:center;
+ color:#aaa;font-style:italic;z-index:5
+}
+.settings{margin-top:18px;background:var(--panel);border:1px solid #292929;border-radius:12px;padding:16px}
+.settings summary{cursor:pointer;color:#bbb}
+.settings-grid{display:grid;grid-template-columns:1fr 160px;gap:10px;margin-top:14px}
+input{width:100%;background:#0d0d0d;color:#fff;border:1px solid #3a3a3a;border-radius:7px;padding:10px}
+.note{color:#777;font-size:12px;line-height:1.5;margin-top:12px}
+@media(max-width:760px){
+ .content{padding:24px 12px}
+ .hero{align-items:flex-start;flex-direction:column}
+ .clock{text-align:left}
+ .stats{grid-template-columns:1fr 1fr}
+ .legend{display:none}
+ th,td{padding:12px 10px}
+
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top"><div class="logo">Resource <span>Prices</span></div></header>
+
+  <main class="content">
+    <section class="hero">
+      <div>
+        <h1>Fuel &amp; CO₂ Forecast</h1>
+      </div>
+      <div class="top-tools">
+        <div id="currentTime" class="current-time">--:--:--</div>
+        <button id="themeToggle" class="theme-toggle" aria-label="Toggle light and dark mode">☾</button>
+      </div>
+    </section>
+
+    <section class="stats">
+      <div class="stat"><small>Best fuel</small><strong id="bestFuel" class="green">—</strong></div>
+      <div class="stat"><small>Best CO₂</small><strong id="bestCo2" class="green">—</strong></div>
+      <div class="stat"><small>Fuel under $500</small><strong id="fuelLow">—</strong></div>
+      <div class="stat"><small>CO₂ under $125</small><strong id="co2Low">—</strong></div>
+    </section>
+
+    <section class="panel">
+      <div class="panelhead">
+        <div class="paneltitle">24-hour price schedule</div>
+        <div class="controls">
+          <div class="legend">
+            <span><i class="dot green"></i>below target</span>
+            <span><i class="dot red"></i>high</span>
+          </div>
+          <button id="refresh">↻ Refresh</button>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Time</th><th>⛽ Fuel</th><th>♻ CO₂</th></tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </section>
+
+
+  </main>
+</div>
+
+<footer class="footer">AM4 Resource Prices • Fuel &amp; CO₂ • automatic timezone display</footer>
+
+<script>
+const FUEL_LIMIT=500, CO2_LIMIT=125;
+
+/* Demo values based on the style/data shown in your screenshot.
+   Replace them automatically by setting a JSON feed URL. */
+const demo=[
+ ["08:30",380,105],["09:00",1470,176],["09:30",2090,158],
+ ["10:00",1350,184],["10:30",1480,176],["11:00",1000,113],
+ ["11:30",1000,119],["12:00",2140,151],["12:30",430,170],
+ ["13:00",1160,196],["13:30",1030,108],["14:00",1590,100],
+ ["14:30",1030,107],["15:00",1740,118],["15:30",1540,176],
+ ["16:00",820,132],["16:30",620,128],["17:00",490,121],
+ ["17:30",560,126],["18:00",470,118],["18:30",880,140],
+ ["19:00",510,124],["19:30",760,131],["20:00",420,116],
+ ["20:30",690,145],["21:00",380,109],["21:30",540,127],
+ ["22:00",720,136],["22:30",460,122],["23:00",610,130],
+ ["23:30",450,117],["00:00",980,151],["00:30",530,129],
+ ["01:00",410,111],["01:30",690,135],["02:00",470,119],
+ ["02:30",830,142],["03:00",390,108],["03:30",570,125],
+ ["04:00",440,115],["04:30",740,138],["05:00",510,124],
+ ["05:30",360,106],["06:00",620,130],["06:30",480,120],
+ ["07:00",790,145],["07:30",430,114]
+];
+
+function money(n){return "$"+Number(n).toLocaleString()}
+function getNextSlotIndex(data){
+ const now=new Date();
+ const mins=now.getHours()*60+now.getMinutes();
+ // Find the next half-hour slot. If exactly on a slot, use that slot.
+ const rounded=((Math.floor(mins/30))*30);
+ const next = mins===rounded ? mins : rounded+30;
+ const target=next%(24*60);
+ let idx=data.findIndex(x=>{
+   const parts=String(x[0]).split(":");
+   if(parts.length<2)return false;
+   const m=(Number(parts[0])*60+Number(parts[1]))%(24*60);
+   return m===target;
+ });
+ return idx<0?0:idx;
+}
+
+function render(data){
+ const rows=document.getElementById("rows");
+ rows.innerHTML="";
+ if(!data.length)return;
+
+ // Never show already-passed demo/feed slots. Start with the next
+ // 30-minute AM4 price slot based on the visitor's actual local clock.
+ const start=getNextSlotIndex(data);
+ const ordered=[];
+ for(let i=0;i<data.length;i++) ordered.push(data[(start+i)%data.length]);
+
+ // Show the next 24 hours (48 half-hour slots maximum).
+ const visible=ordered.slice(0,48);
+
+ let minF=Infinity,minC=Infinity,fl=0,cl=0;
+ visible.forEach((x,i)=>{
+   const [time,fuel,co2]=x;
+   const lf=fuel<FUEL_LIMIT, lc=co2<CO2_LIMIT;
+   if(lf)fl++; if(lc)cl++;
+   minF=Math.min(minF,fuel); minC=Math.min(minC,co2);
+
+   const tr=document.createElement("tr");
+   if(i===0)tr.className="now";
+
+   tr.innerHTML=`<td>${time}${i===0?' <span class="badge">NEXT</span>':''}</td>
+                 <td class="price ${lf?'low':fuel>1000?'high':'ok'}">${money(fuel)}</td>
+                 <td class="price ${lc?'low':co2>150?'high':'ok'}">${money(co2)}</td>`;
+   rows.appendChild(tr);
+ });
+
+ document.getElementById("bestFuel").textContent=isFinite(minF)?money(minF):"—";
+ document.getElementById("bestCo2").textContent=isFinite(minC)?money(minC):"—";
+ document.getElementById("fuelLow").textContent=fl;
+ document.getElementById("co2Low").textContent=cl;
+}
+
+function updateClock(){
+ const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+ const off=new Intl.DateTimeFormat("en-US",{timeZoneName:"longOffset"}).formatToParts(new Date()).find(x=>x.type==="timeZoneName")?.value||"UTC";
+ document.getElementById("zone").textContent=tz;
+ document.getElementById("utc").textContent=off.replace("GMT","UTC");
+}
+async function loadFeed(){
+ const url=document.getElementById("feed").value.trim();
+ if(!url){render(demo);return}
+ try{
+   const r=await fetch(url,{cache:"no-store"});
+   if(!r.ok)throw new Error("HTTP "+r.status);
+   const j=await r.json();
+   const a=Array.isArray(j)?j:(j.prices||j.data||[]);
+   const d=a.slice(0,48).map(x=>[
+     x.time??x.datetime??x.timestamp,
+     Number(x.fuel??x.fuel_price),
+     Number(x.co2??x.co2_price??x.CO2)
+   ]).filter(x=>x[0]&&Number.isFinite(x[1])&&Number.isFinite(x[2]));
+   render(d);
+   localStorage.setItem("am4Feed",url);
+ }catch(e){
+   alert("Could not load the feed: "+e.message);
+ }
+}
+document.getElementById("refresh").onclick=()=>render(demo);
+
+function updateClock(){
+ const d=new Date();
+ document.getElementById("currentTime").textContent=d.toLocaleTimeString([], {
+   hour:"2-digit", minute:"2-digit", second:"2-digit", hour12:false
+ });
+}
+
+const savedTheme=localStorage.getItem("am4Theme");
+if(savedTheme) document.documentElement.dataset.theme=savedTheme;
+
+document.getElementById("themeToggle").onclick=()=>{
+ const current=document.documentElement.dataset.theme;
+ const next=current==="light"?"dark":"light";
+ document.documentElement.dataset.theme=next;
+ localStorage.setItem("am4Theme",next);
+ updateThemeButton();
+};
+function updateThemeButton(){
+ const light=document.documentElement.dataset.theme==="light";
+ document.getElementById("themeToggle").textContent=light?"☀":"☾";
+}
+updateThemeButton();
+render(demo); updateClock();
+setInterval(updateClock,1000);
+setInterval(()=>render(demo),60000);
+</script>
+</body>
+</html>
